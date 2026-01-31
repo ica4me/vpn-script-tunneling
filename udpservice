@@ -1,0 +1,13 @@
+[Unit]
+Description=udp-custom by ePro Dev. Team
+
+[Service]
+User=root
+Type=simple
+ExecStart=/usr/sbin/potatonc/udp/udp-server server -exclude 7100,7200,7300,7400,7500,7600,25000,8488,5355,53,5300,443,80,69,444,22,2222,143,1194,55,808,10000
+WorkingDirectory=/usr/sbin/potatonc/udp/
+Restart=always
+RestartSec=2s
+
+[Install]
+WantedBy=default.target
