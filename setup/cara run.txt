@@ -1,1 +1,20 @@
+Sistem Operasi yang Didukung
+Ubuntu: Versi 20.04 (Focal Fossa) dan 22.04 (Jammy Jellyfish).
+
+Debian: Versi 10 (Buster) dan 11 (Bullseye).
+
+||==================||
+
+
 apt update && apt install -y wget && wget -q https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/setup/install.sh && chmod +x install.sh && ./install.sh
+
+||==================||
+
+Persyaratan VPS (Hardware)
+Agar proses instalasi lancar (terutama saat proses compile Haproxy di 6.sh dan Python di 1.sh):
+
+RAM: Minimal 1 GB (Sangat disarankan). Jika RAM hanya 512 MB, proses kompilasi mungkin akan gagal karena kehabisan memori.
+
+Disk Space: Minimal sisa 5 GB.
+
+Kondisi OS: Harus Fresh Install (OS yang baru di-reinstall). Jangan menjalankan script ini di OS yang sudah terpasang web server atau VPN lain karena akan terjadi konflik port.
