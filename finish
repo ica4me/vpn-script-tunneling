@@ -1,0 +1,199 @@
+
+ [32mDownloading X success[0m
+
+
+ [32mDownloading BadVPN-UDPGW success[0m
+
+
+ [32mDownloading WEB success[0m
+
+Reading package lists...
+Building dependency tree...
+Reading state information...
+php8.2-ssh2 is already the newest version (1.3.1+0.13-7).
+0 upgraded, 0 newly installed, 0 to remove and 54 not upgraded.
+Enabling module rewrite.
+To activate the new configuration, you need to run:
+  systemctl restart apache2
+
+ [32mDownloading A-Conf success[0m
+
+ Web Active
+
+ [32mDownloading Nginx-CDN success[0m
+
+
+ [32mDownloading Function-New success[0m
+
+
+ [32mDownloading TrustMe success[0m
+
+
+ [32mDownloading Ctl-Conf success[0m
+
+
+ [32mDownloading Get-Script-Version success[0m
+
+ [0;33mPort parsing will take longer[0m, Please wait...
+
+ [32mDownloading WARP by fscarmen success[0m
+
+[33m[01m 
+ Language:
+ 1. English (default) 
+ 2. 简体中文 
+[0m
+[32m[01m
+ All dependencies already exist and do not need to be installed additionally. 
+[0m
+[32m[01m Checking VPS infomation... [0m
+
+==============================================================
+
+[32m[01m WireProxy Solution. A wireguard client that exposes itself as a socks5 proxy or tunnels. Adapted from the mature works of [pufferffish],[https://github.com/pufferffish/wireproxy] [0m
+
+==============================================================
+
+[33m[01m 1. Run script [0m
+[33m[01m 0. Exit 
+[0m
+[33m[01m
+ Is there a WARP+ or Teams account?
+ 1. Use free account (default)
+ 2. WARP+
+ 3. Teams 
+[0m
+[32m[01m
+ Step 1/3: Install dependencies... 
+[0m
+Hit:1 http://cermin.rumahweb.id/debian bookworm InRelease
+Hit:2 http://cermin.rumahweb.id/debian-security bookworm-security InRelease
+Hit:3 http://cermin.rumahweb.id/debian bookworm-updates InRelease
+Get:4 http://deb.debian.org/debian bookworm-backports InRelease [59.4 kB]
+Hit:5 http://nginx.org/packages/debian bookworm InRelease
+Get:6 http://deb.debian.org/debian bookworm-backports/main amd64 Packages [300 kB]
+Get:7 http://deb.debian.org/debian bookworm-backports/main Translation-en [253 kB]
+Fetched 612 kB in 2s (303 kB/s)
+Reading package lists...
+Building dependency tree...
+Reading state information...
+54 packages can be upgraded. Run 'apt list --upgradable' to see them.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+net-tools is already the newest version (2.10-0.1+deb12u2).
+dnsutils is already the newest version (1:9.18.44-1~deb12u1).
+iptables is already the newest version (1.8.9-2).
+The following NEW packages will be installed:
+  openresolv
+0 upgraded, 1 newly installed, 0 to remove and 54 not upgraded.
+Need to get 24.7 kB of archives.
+After this operation, 104 kB of additional disk space will be used.
+Get:1 http://cermin.rumahweb.id/debian bookworm/main amd64 openresolv all 3.12.0-3 [24.7 kB]
+Fetched 24.7 kB in 0s (776 kB/s)
+Selecting previously unselected package openresolv.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 58376 files and directories currently installed.)
+Preparing to unpack .../openresolv_3.12.0-3_all.deb ...
+Unpacking openresolv (3.12.0-3) ...
+Setting up openresolv (3.12.0-3) ...
+Processing triggers for man-db (2.11.2-2) ...
+[32m[01m
+ Step 3/3: Searching for the best MTU value and endpoint address are ready. 
+[0m
+[32m[01m Create shortcut [warp] successfully [0m
+[33m[01m Maximum 3 attempts to get WARP IP...
+ Try 1 [0m
+[33m[01m Try 2 [0m
+[33m[01m Try 3 [0m
+[31m[01m There have been more than 3 failures. The script is aborted. Attach the above error message. Feedback: [https://github.com/fscarmen/warp-sh/issues] [0m
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following packages will be REMOVED:
+  openresolv
+The following NEW packages will be installed:
+  resolvconf
+0 upgraded, 1 newly installed, 1 to remove and 54 not upgraded.
+Need to get 55.6 kB of archives.
+After this operation, 79.9 kB of additional disk space will be used.
+Get:1 http://cermin.rumahweb.id/debian bookworm/main amd64 resolvconf all 1.91+nmu1 [55.6 kB]
+Preconfiguring packages ...
+Fetched 55.6 kB in 0s (1,540 kB/s)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 58398 files and directories currently installed.)
+Removing openresolv (3.12.0-3) ...
+Selecting previously unselected package resolvconf.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 58382 files and directories currently installed.)
+Preparing to unpack .../resolvconf_1.91+nmu1_all.deb ...
+Unpacking resolvconf (1.91+nmu1) ...
+Setting up resolvconf (1.91+nmu1) ...
+Installing new version of config file /etc/dhcp/dhclient-enter-hooks.d/resolvconf ...
+Installing new version of config file /etc/network/if-down.d/resolvconf ...
+Installing new version of config file /etc/network/if-up.d/000resolvconf ...
+Installing new version of config file /etc/ppp/ip-down.d/000resolvconf ...
+Installing new version of config file /etc/ppp/ip-up.d/000resolvconf ...
+Created symlink /etc/systemd/system/sysinit.target.wants/resolvconf.service → /lib/systemd/system/resolvconf.service.
+Created symlink /etc/systemd/system/systemd-resolved.service.wants/resolvconf-pull-resolved.path → /lib/systemd/system/resolvconf-pull-resolved.path.
+Unit /lib/systemd/system/resolvconf-pull-resolved.path is added as a dependency to a non-existent unit systemd-resolved.service.
+Created symlink /etc/systemd/system/systemd-resolved.service.wants/resolvconf-pull-resolved.service → /lib/systemd/system/resolvconf-pull-resolved.service.
+Unit /lib/systemd/system/resolvconf-pull-resolved.service is added as a dependency to a non-existent unit systemd-resolved.service.
+Processing triggers for man-db (2.11.2-2) ...
+Processing triggers for resolvconf (1.91+nmu1) ...
+[H[J
+ [5;36;40m————————————————————————————————————————[0m
+[5;36;40m|            [0;35mPotato Tunneling[5;36;40m            |
+ [5;36;40m————————————————————————————————————————[0m
+
+ SSH            : [32m[ON][0m
+ DROPBEAR       : [32m[ON][0m
+ OPENVPN        : [31m[OFF][0m
+ SQUID          : [32m[ON][0m
+ NGINX          : [32m[ON][0m
+ BADVPN         : [32m[ON][0m
+ VMESS          : [32m[ON][0m
+ VLESS          : [32m[ON][0m
+ TROJAN         : [32m[ON][0m
+ SlowDNS        : [31m[OFF][0m
+ DNS OpenVPN    : [31m[OFF][0m
+ WEB            : [31m[OFF][0m
+ HTTP           : [32m[ON][0m
+ HTTPS          : [32m[ON][0m
+
+ [5;36;40m————————————————————————————————————————[0m
+
+
+ [0;35mPress Enter for Back to Manage[0m
+
+Linux Distribution:		Debian GNU/Linux 12 (bookworm)
+Linux Kernel:			6.1.0-31-amd64
+Computer Model:			Red Hat KVM RHEL 7.6.0 PC (i440FX + PIIX, 1996)
+Processor (CPU):		Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz
+CPU Sockets/Cores/Threads:	1/1/1
+CPU Caches:			L1d: 32 KiB × 1 (32KiB)
+				L1i: 32 KiB × 1 (32KiB)
+				L2: 256 KiB × 1 (256KiB)
+				L3: 51,200 KiB × 1 (50MiB)
+Architecture:			x86_64 (64-bit)
+Total memory (RAM):		960 MiB (1,007 MB)
+Total swap space:		2,303 MiB (2.3GiB) (2,415 MB (2.5GB))
+Disk space:			vda: 20,480 MiB (20GiB) (21,474 MB (22GB))
+Graphics Processor (GPU):	Cirrus Logic GD 5446
+Computer name:			myplan.meiyu.my.id
+Hostname:			myplan.meiyu.my.id
+IPv4 addresses:			eth0: 202.10.37.17
+				eth1: 10.0.130.127
+IPv6 address:			eth0: 2001:df1:7800::284
+MAC addresses:			eth0: 00:16:3e:38:94:9e
+				eth1: 00:16:3e:ee:c4:25
+Computer ID:			dd93db1db7222321b4923757648a69d0
+Time zone:			Asia/Jakarta (WIB, +0700)
+Language:			en_US.UTF-8
+Virtual Machine (VM) hypervisor:kvm
+Bash Version:			5.2.15(1)-release
+Terminal:			screen
+
+
+ Backup & Restore Data VPS
+ [0;33mhttp://202.10.37.17:8555[0m
+
+   Please ☞ [5;36;40mreboot[0m
+

@@ -1,0 +1,124 @@
+# This file is a shell script that caches the results of configure
+# tests run on this system so they can be shared between configure
+# scripts and configure runs, see configure's option --config-cache.
+# It is not useful on other systems.  If it contains results you don't
+# want to keep, you may remove or edit it.
+#
+# config.status only pays attention to the cache file if you give it
+# the --recheck option to rerun configure.
+#
+# `ac_cv_env_foo' variables (set or unset) will be overridden when
+# loading this file, other *unset* `ac_cv_foo' will be assigned the
+# following values.
+
+ac_cv_build=${ac_cv_build=x86_64-unknown-linux-gnu}
+ac_cv_c_compiler_gnu=${ac_cv_c_compiler_gnu=yes}
+ac_cv_c_int32_t=${ac_cv_c_int32_t=yes}
+ac_cv_c_uint32_t=${ac_cv_c_uint32_t=yes}
+ac_cv_c_uint64_t=${ac_cv_c_uint64_t=yes}
+ac_cv_env_CC_set=
+ac_cv_env_CC_value=
+ac_cv_env_CFLAGS_set=
+ac_cv_env_CFLAGS_value=
+ac_cv_env_CHECK_CFLAGS_set=
+ac_cv_env_CHECK_CFLAGS_value=
+ac_cv_env_CHECK_LIBS_set=
+ac_cv_env_CHECK_LIBS_value=
+ac_cv_env_CPPFLAGS_set=
+ac_cv_env_CPPFLAGS_value=
+ac_cv_env_CPP_set=
+ac_cv_env_CPP_value=
+ac_cv_env_LDFLAGS_set=
+ac_cv_env_LDFLAGS_value=
+ac_cv_env_LIBS_set=
+ac_cv_env_LIBS_value=
+ac_cv_env_PKG_CONFIG_LIBDIR_set=
+ac_cv_env_PKG_CONFIG_LIBDIR_value=
+ac_cv_env_PKG_CONFIG_PATH_set=
+ac_cv_env_PKG_CONFIG_PATH_value=
+ac_cv_env_PKG_CONFIG_set=
+ac_cv_env_PKG_CONFIG_value=
+ac_cv_env_build_alias_set=
+ac_cv_env_build_alias_value=
+ac_cv_env_host_alias_set=
+ac_cv_env_host_alias_value=
+ac_cv_env_target_alias_set=
+ac_cv_env_target_alias_value=
+ac_cv_func_alarm=${ac_cv_func_alarm=yes}
+ac_cv_func_chown_works=${ac_cv_func_chown_works=yes}
+ac_cv_func_dup2=${ac_cv_func_dup2=yes}
+ac_cv_func_fork=${ac_cv_func_fork=yes}
+ac_cv_func_fork_works=${ac_cv_func_fork_works=yes}
+ac_cv_func_localtime_r=${ac_cv_func_localtime_r=yes}
+ac_cv_func_mbstowcs=${ac_cv_func_mbstowcs=yes}
+ac_cv_func_memset=${ac_cv_func_memset=yes}
+ac_cv_func_mkdir=${ac_cv_func_mkdir=yes}
+ac_cv_func_pow=${ac_cv_func_pow=yes}
+ac_cv_func_rmdir=${ac_cv_func_rmdir=yes}
+ac_cv_func_setlocale=${ac_cv_func_setlocale=yes}
+ac_cv_func_strcasecmp=${ac_cv_func_strcasecmp=yes}
+ac_cv_func_strchr=${ac_cv_func_strchr=yes}
+ac_cv_func_strdup=${ac_cv_func_strdup=yes}
+ac_cv_func_strerror=${ac_cv_func_strerror=yes}
+ac_cv_func_strncasecmp=${ac_cv_func_strncasecmp=yes}
+ac_cv_func_strstr=${ac_cv_func_strstr=yes}
+ac_cv_func_strtol=${ac_cv_func_strtol=yes}
+ac_cv_func_strtoul=${ac_cv_func_strtoul=yes}
+ac_cv_func_strtoull=${ac_cv_func_strtoull=yes}
+ac_cv_func_tzset=${ac_cv_func_tzset=yes}
+ac_cv_func_vfork=${ac_cv_func_vfork=yes}
+ac_cv_func_vfork_works=${ac_cv_func_vfork_works=yes}
+ac_cv_func_wcswidth=${ac_cv_func_wcswidth=yes}
+ac_cv_func_working_mktime=${ac_cv_func_working_mktime=yes}
+ac_cv_have_decl_GD_NEAREST_NEIGHBOUR=${ac_cv_have_decl_GD_NEAREST_NEIGHBOUR=no}
+ac_cv_have_decl_IFLA_STATS64=${ac_cv_have_decl_IFLA_STATS64=yes}
+ac_cv_have_decl_O_CLOEXEC=${ac_cv_have_decl_O_CLOEXEC=yes}
+ac_cv_have_decl_SQLITE_CHECKPOINT_RESTART=${ac_cv_have_decl_SQLITE_CHECKPOINT_RESTART=yes}
+ac_cv_have_decl_SQLITE_CHECKPOINT_TRUNCATE=${ac_cv_have_decl_SQLITE_CHECKPOINT_TRUNCATE=yes}
+ac_cv_have_decl_gdImageFile=${ac_cv_have_decl_gdImageFile=no}
+ac_cv_header_fcntl_h=${ac_cv_header_fcntl_h=yes}
+ac_cv_header_inttypes_h=${ac_cv_header_inttypes_h=yes}
+ac_cv_header_linux_rtnetlink_h=${ac_cv_header_linux_rtnetlink_h=yes}
+ac_cv_header_locale_h=${ac_cv_header_locale_h=yes}
+ac_cv_header_memory_h=${ac_cv_header_memory_h=yes}
+ac_cv_header_stdc=${ac_cv_header_stdc=yes}
+ac_cv_header_stdint_h=${ac_cv_header_stdint_h=yes}
+ac_cv_header_stdlib_h=${ac_cv_header_stdlib_h=yes}
+ac_cv_header_string_h=${ac_cv_header_string_h=yes}
+ac_cv_header_strings_h=${ac_cv_header_strings_h=yes}
+ac_cv_header_sys_file_h=${ac_cv_header_sys_file_h=yes}
+ac_cv_header_sys_mount_h=${ac_cv_header_sys_mount_h=yes}
+ac_cv_header_sys_param_h=${ac_cv_header_sys_param_h=yes}
+ac_cv_header_sys_socket_h=${ac_cv_header_sys_socket_h=yes}
+ac_cv_header_sys_stat_h=${ac_cv_header_sys_stat_h=yes}
+ac_cv_header_sys_statvfs_h=${ac_cv_header_sys_statvfs_h=yes}
+ac_cv_header_sys_time_h=${ac_cv_header_sys_time_h=yes}
+ac_cv_header_sys_types_h=${ac_cv_header_sys_types_h=yes}
+ac_cv_header_syslog_h=${ac_cv_header_syslog_h=yes}
+ac_cv_header_time=${ac_cv_header_time=yes}
+ac_cv_header_unistd_h=${ac_cv_header_unistd_h=yes}
+ac_cv_header_vfork_h=${ac_cv_header_vfork_h=no}
+ac_cv_header_wchar_h=${ac_cv_header_wchar_h=yes}
+ac_cv_host=${ac_cv_host=x86_64-unknown-linux-gnu}
+ac_cv_lib_gd_gdImagePng=${ac_cv_lib_gd_gdImagePng=no}
+ac_cv_lib_m_pow=${ac_cv_lib_m_pow=yes}
+ac_cv_lib_sqlite3_sqlite3_prepare_v2=${ac_cv_lib_sqlite3_sqlite3_prepare_v2=yes}
+ac_cv_objext=${ac_cv_objext=o}
+ac_cv_path_EGREP=${ac_cv_path_EGREP='/usr/bin/grep -E'}
+ac_cv_path_GREP=${ac_cv_path_GREP=/usr/bin/grep}
+ac_cv_path_ac_pt_PKG_CONFIG=${ac_cv_path_ac_pt_PKG_CONFIG=/usr/bin/pkg-config}
+ac_cv_path_install=${ac_cv_path_install='/usr/bin/install -c'}
+ac_cv_path_mkdir=${ac_cv_path_mkdir=/usr/bin/mkdir}
+ac_cv_prog_AWK=${ac_cv_prog_AWK=gawk}
+ac_cv_prog_CPP=${ac_cv_prog_CPP='gcc -E'}
+ac_cv_prog_ac_ct_CC=${ac_cv_prog_ac_ct_CC=gcc}
+ac_cv_prog_cc_c89=${ac_cv_prog_cc_c89=}
+ac_cv_prog_cc_g=${ac_cv_prog_cc_g=yes}
+ac_cv_prog_make_make_set=${ac_cv_prog_make_make_set=yes}
+ac_cv_type_mode_t=${ac_cv_type_mode_t=yes}
+ac_cv_type_pid_t=${ac_cv_type_pid_t=yes}
+ac_cv_type_size_t=${ac_cv_type_size_t=yes}
+ac_cv_type_uid_t=${ac_cv_type_uid_t=yes}
+am_cv_CC_dependencies_compiler_type=${am_cv_CC_dependencies_compiler_type=none}
+am_cv_make_support_nested_variables=${am_cv_make_support_nested_variables=yes}
+am_cv_prog_cc_c_o=${am_cv_prog_cc_c_o=yes}
