@@ -10,6 +10,9 @@ apt install -y wget && wget -q https://raw.githubusercontent.com/ica4me/vpn-scri
 
 ||==================||
 
+apt update && apt install -y sqlite3 jq curl python3 python-is-python3
+apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget
+
 (apt update && apt install -y wget && wget -q https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/setup/install.sh && chmod +x install.sh && ./install.sh) 2>&1 | tee full_log.txt
 
 cat full_log.txt | grep -E "E: |W: |error|Error|fail|Fail|denied|found|directory|permission|confirm|\[y/n\]|\[Y/n\]|\[y/N\]" > log_isntalasi_percobaan.txt
