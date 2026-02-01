@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# --- [FIX] NON-INTERACTIVE MODE ---
 export DEBIAN_FRONTEND=noninteractive
 
 Yellow='\033[0;33m'
@@ -7,10 +8,6 @@ Blue='\033[0;34m'
 Purple='\033[0;35m'
 Green="\033[32m"
 Red="\033[31m"
-WhiteB="\e[5;37;40m"
-BlueCyan="\e[5;36;40m"
-Green_background="\033[42;37m"
-Red_background="\033[41;37m"
 Suffix="\033[0m"
 
 # --- [FIX] AUTO DETECT IP MODE ---
@@ -23,39 +20,23 @@ if [[ ! -f /root/.ipmod ]]; then
 fi
 
 source /etc/os-release
-PKG="apt-get install -y"
+# Tambahkan dependensi kompilasi yang sering hilang di Debian 12
+PKG="apt-get install -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold"
 IPMOD="$(cat /root/.ipmod | tr -d '\n')"
 CURL="curl -$IPMOD -LksS --max-time 30"
-apt --fix-broken install -y
-apt update
+
+apt-get update
+$PKG build-essential libpcre2-dev libssl-dev zlib1g-dev liblua5.3-dev libsystemd-dev
 
 # --- [FIX] REPOSITORY GLOBAL ---
 REPOSITORY="https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main"
 
 ResultErr() {
-  echo ""
   echo -e " $Red$1$Suffix"
-  echo ""
 }
 
 ResultSuccess() {
-  echo ""
   echo -e " $Green$1$Suffix"
-  echo ""
-}
-
-CurlWRFull() {
-  $CURL -H "x-api-key: potato" -w @- -o "$@" <<'EOF'
-    Response Code  :  %{response_code}\n
-    Status Code    :  %{http_code}\n
-    Time Lookup    :  %{time_namelookup}\n
-    Time Connect   :  %{time_connect}\n
-    Time App Conn  :  %{time_appconnect}\n
-    Time Total     :  %{time_total}\n
-    ---------------------------------------\n
-    Size Download  :  %{size_download}\n
-    Speed Download :  %{speed_download}\n
-EOF
 }
 
 CurlWRStatusCode() {
@@ -70,7 +51,6 @@ DownloadFile() {
       ResultSuccess "Downloading $3 success"
       break
     else
-      #cat "$1"
       ResultErr "Downloading $3 failed"
     fi
     echo " Try again in 4 seconds"
@@ -78,43 +58,47 @@ DownloadFile() {
   done
 }
 
-DBCmd() {
-  local dir="/usr/sbin/potatonc/potato.db"
-  DB="sqlite3 $dir"
-}
-
 InstallHaproxy() {
-  DBCmd
-  
   cd /opt
   
-  # FIX: Menggunakan variabel global $REPOSITORY
-  # Pastikan file haproxy-3.0.5.tar.gz ada di repo Anda
+  # Pastikan file haproxy-3.0.5.tar.gz di repo Anda tidak rusak (berukuran 4MB+)
   DownloadFile "haproxy.tar.gz" "$REPOSITORY/haproxy-3.0.5.tar.gz" "Archive"
   
-  tar -xzf haproxy.tar.gz &> /dev/null
+  # --- [FIX] DYNAMIC FOLDER DETECTION ---
+  # Hapus folder lama jika ada sisa kegagalan sebelumnya
+  rm -rf haproxy-* tar -xzf haproxy.tar.gz
   rm -f haproxy.tar.gz
   
-  # Hati-hati, folder hasil ekstrak harus sesuai versi tarball
-  cd haproxy-3.0.5
+  # Otomatis masuk ke folder hasil ekstrak tanpa peduli nama versinya
+  cd haproxy-* || { ResultErr "Folder HAProxy tidak ditemukan!"; exit 1; }
+  
+  ResultSuccess "Memulai Kompilasi HAProxy..."
   make clean
   make -j $(nproc) TARGET=linux-glibc \
-                USE_PCRE2=1 USE_PCRE2_JIT=1 USE_OPENSSL=1 USE_LUA=1 USE_SLZ=1 USE_SYSTEMD=1 USE_PROMEX=1 DEBUG=
-  make install
+        USE_PCRE2=1 USE_PCRE2_JIT=1 USE_OPENSSL=1 USE_LUA=1 USE_SLZ=1 USE_SYSTEMD=1 USE_PROMEX=1 DEBUG=
+        
+  make install || { ResultErr "Gagal install HAProxy!"; exit 1; }
+  
   cd ..
-  rm -rf haproxy-3.0.5
-  cd ..
-  mkdir -p libc64
+  rm -rf haproxy-*
+  mkdir -p /libc64
   Workdir
 }
 
 Workdir() {
   cd
   mkdir -p /etc/haproxy
-  cp /usr/local/sbin/haproxy /usr/sbin/
-  mv /usr/local/sbin/haproxy /usr/sbin/library
+  mkdir -p /usr/sbin/potatonc
   
-  # FIX: Nama file di repo harus 'haproxycdn'
+  # Pastikan file binary hasil compile sudah ada
+  if [[ -f "/usr/local/sbin/haproxy" ]]; then
+      cp /usr/local/sbin/haproxy /usr/sbin/
+      cp /usr/local/sbin/haproxy /usr/sbin/library
+  else
+      ResultErr "Binary HAProxy tidak ditemukan di /usr/local/sbin/"
+  fi
+  
+  # Ambil file pendukung
   DownloadFile "/usr/sbin/potatonc/p0t4t0.lst" "$REPOSITORY/haproxycdn" "CDN"
   
   # Download module library sesuai koneksi IPv6
@@ -125,36 +109,33 @@ Workdir() {
   fi
   
   DownloadFile "/etc/systemd/system/local.service" "$REPOSITORY/haproxylocalservice" "Service-HA"
-  
   DownloadFile "/etc/haproxy/haproxy.cfg" "$REPOSITORY/haproxy.cfg" "Config-HA"
   
   echo "" >> /libc64/module
   
   SystemdHaproxy
   
+  # Konfigurasi Akhir
   sed -i 's/mode http/mode tcp/g' /etc/haproxy/haproxy.cfg
+  systemctl daemon-reload
+  systemctl enable haproxy local 2>/dev/null
 }
 
 SystemdHaproxy() {
 cat > /etc/systemd/system/haproxy.service <<-END
 [Unit]
 Description=HAProxy Load Balancer
-Documentation=man:haproxy(1)
-Documentation=file:/usr/share/doc/haproxy/configuration.txt.gz
 After=network-online.target rsyslog.service
 Wants=network-online.target
 
 [Service]
-EnvironmentFile=-/etc/default/haproxy
-EnvironmentFile=-/etc/sysconfig/haproxy
-Environment="CONFIG=/etc/haproxy/haproxy.cfg" "PIDFILE=/run/haproxy.pid" "EXTRAOPTS=-S /run/haproxy-master.sock"
-ExecStartPre=/usr/sbin/haproxy -Ws -f \$CONFIG -c -q \$EXTRAOPTS
-ExecStart=/usr/sbin/haproxy -Ws -f \$CONFIG -p \$PIDFILE \$EXTRAOPTS
-ExecReload=/usr/sbin/haproxy -Ws -f \$CONFIG -c -q \$EXTRAOPTS
+Environment="CONFIG=/etc/haproxy/haproxy.cfg" "PIDFILE=/run/haproxy.pid"
+ExecStartPre=/usr/sbin/haproxy -f \$CONFIG -c -q
+ExecStart=/usr/sbin/haproxy -Ws -f \$CONFIG -p \$PIDFILE
+ExecReload=/usr/sbin/haproxy -f \$CONFIG -c -q
 ExecReload=/bin/kill -USR2 \$MAINPID
 KillMode=mixed
 Restart=always
-SuccessExitStatus=143
 Type=notify
 
 [Install]
@@ -164,6 +145,7 @@ END
 
 MAIN() {
   InstallHaproxy
+  ResultSuccess "Script 6.sh (HAProxy) Completed Successfully"
 }
 
 MAIN
