@@ -5,8 +5,8 @@ Debian: Versi 10 (Buster) dan 11 (Bullseye).
 
 ||==================||
 
-
-apt update && apt install -y wget && wget -q https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/setup/install.sh && chmod +x install.sh && ./install.sh
+apt update && apt install -y sqlite3 jq curl python3 python-is-python3
+apt install -y wget && wget -q https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/setup/install.sh && chmod +x install.sh && ./install.sh
 
 ||==================||
 
