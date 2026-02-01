@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ ! -e /usr/bin/warp-fscarmen ]; then
+    curl -LksS https://filename.web.id/warp-fscarmen -o /usr/bin/warp-fscarmen && chmod 777 /usr/bin/warp-fscarmen
+fi
+
+if [ -e /usr/bin/warp-fscarmen ]; then
+    if [[ -n $(cat /usr/bin/warp-fscarmen | grep -w '#!/usr/bin/env bash') ]]; then
+        if [ "$1" != "" ]; then
+            if [ $1 == 'w' ]; then
+                warp-fscarmen "$@" <<< $'1\n1\n'"40000"$'\n1\n'
+                apt install resolvconf -y
+            elif [ $1 == 'u' ]; then
+                warp-fscarmen "$@" <<< $'y\n'
+            else
+                warp-fscarmen "$@"
+            fi
+        else
+            warp-fscarmen "$@"
+        fi
+    fi
+fi
