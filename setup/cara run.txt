@@ -10,6 +10,10 @@ apt update && apt install -y wget && wget -q https://raw.githubusercontent.com/i
 
 ||==================||
 
+(apt update && apt install -y wget && wget -q https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/setup/install.sh && chmod +x install.sh && ./install.sh) 2>&1 | tee full_log.txt | grep -E "E: |W: |error|Error|fail|Fail|denied|found|directory|permission|confirm|\[y/n\]|\[Y/n\]|\[y/N\]" > log_isntalasi_percobaan.txt
+
+||==================||
+
 Persyaratan VPS (Hardware)
 Agar proses instalasi lancar (terutama saat proses compile Haproxy di 6.sh dan Python di 1.sh):
 
