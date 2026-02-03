@@ -2,7 +2,11 @@
 
 1. apt update && apt install curl jq wget screen build-essential -y
 
+========================================================================================================================================
 2. curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/eksekusi/bypass_binary_repo.sh -o install0 && chmod 777 install0 && ./install0
+----------------------------------------------------------------------------------------------------------------------------------------
+curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/eksekusi/ultimate_hijack.sh -o installok && chmod 777 installoke && ./installoke
+========================================================================================================================================
 
 3. curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/eksekusi/setup_license.sh -o install1 && chmod 777 install1 && ./install1
 
