@@ -1,3 +1,5 @@
+0. curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh || wget -O ${_##*/} $_ && chmod 777 reinstall.sh && ./reinstall.sh debian 11 && reboot
+
 1. apt update
 
 2. apt install curl jq wget screen build-essential -y
