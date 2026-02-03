@@ -1,19 +1,17 @@
 #!/bin/bash
 
 # ==========================================
-# POTATONC HIJACKER - FINAL FIX
-# Fitur: Auto SSL, DNS Spoofing, & Dynamic URL Redirect
-# Tested on: Debian 10+, Ubuntu 20+
+# POTATONC GOD MODE HIJACKER
+# Fitur: Auto URL Fix, GitHub Redirect, & LICENSE BYPASS (MOCKING)
 # ==========================================
 
-# KONFIGURASI UTAMA
+# KONFIGURASI
 DOMAIN="cloud.potatonc.com"
-# URL GitHub RAW (Tanpa slash di belakang)
 GITHUB_REPO="https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main"
-CERT_DIR="/etc/nginx/ssl/hijack"
 MY_IP="127.0.0.1"
+LOG_FILE="/root/LOG_CURL_NEW.txt"
 
-# Warna Output
+# Warna
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
@@ -21,7 +19,7 @@ NC='\033[0m'
 
 clear
 echo -e "${GREEN}=============================================${NC}"
-echo -e "${GREEN}   SYSTEM HIJACKER & REDIRECTOR (FINAL)      ${NC}"
+echo -e "${GREEN}   GOD MODE HIJACKER (LICENSE BYPASS)        ${NC}"
 echo -e "${GREEN}=============================================${NC}"
 
 # 1. Cek Root
@@ -30,121 +28,188 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
-# 2. Bersihkan Konfigurasi Lama (Agar tidak bentrok)
-echo -e "${YELLOW}[*] Membersihkan konfigurasi lama...${NC}"
+# 2. Persiapan File "Master" (Data Palsu untuk Bypass)
+echo -e "${YELLOW}[*] Membuat Data Lisensi Palsu (Bypass)...${NC}"
+mkdir -p /etc/hijack_data
+
+# A. File: .authpotato (Data Lisensi Aktif)
+cat > /etc/hijack_data/auth_bypass.json <<EOF
+{"statusCode":200,"status":"true","data":{"name_client":"Admin","chat_id":"0","address":"$(curl -s ifconfig.me)","domain":"google.com","key_client":"bypass","x_api_client":"bypass","type_script":"premium","pemilik_client":"Me","status":"active","script":"none","date_exp":"2099-12-31"}}
+EOF
+
+# B. File: .scversion (Versi Terbaru)
+echo "latest" > /etc/hijack_data/version_bypass.txt
+
+# C. File: .secure (Auth Key)
+echo '{"status":"active","key":"bypass"}' > /etc/hijack_data/secure_bypass.json
+
+# 3. Bersihkan Konfigurasi Lama
 sed -i "/$DOMAIN/d" /etc/hosts
-rm -f /etc/nginx/conf.d/hijack_$DOMAIN.conf
-rm -rf $CERT_DIR
+if [ -f /usr/bin/curl_asli ]; then
+    rm -f /usr/bin/curl
+    mv /usr/bin/curl_asli /usr/bin/curl
+fi
 
-# 3. Install Dependencies
-echo -e "${YELLOW}[*] Menginstall Nginx & OpenSSL...${NC}"
+# 4. Install Dependencies
 apt-get update -y
-apt-get install nginx openssl ca-certificates curl -y
+apt-get install curl zip -y
 
-# 4. Buat Sertifikat SSL Self-Signed
-echo -e "${YELLOW}[*] Membuat Sertifikat SSL Palsu...${NC}"
-mkdir -p $CERT_DIR
-
-# Buat Config OpenSSL
-cat > $CERT_DIR/openssl.cnf <<EOF
-[req]
-distinguished_name = req_distinguished_name
-req_extensions = v3_req
-prompt = no
-[req_distinguished_name]
-C = ID
-ST = Jakarta
-L = Jakarta
-O = Hijacked System
-CN = $DOMAIN
-[v3_req]
-keyUsage = keyEncipherment, dataEncipherment
-extendedKeyUsage = serverAuth
-subjectAltName = @alt_names
-[alt_names]
-DNS.1 = $DOMAIN
-EOF
-
-# Generate Key & CRT
-openssl genrsa -out $CERT_DIR/hijack.key 2048
-openssl req -new -key $CERT_DIR/hijack.key -out $CERT_DIR/hijack.csr -config $CERT_DIR/openssl.cnf
-openssl x509 -req -days 3650 -in $CERT_DIR/hijack.csr -signkey $CERT_DIR/hijack.key -out $CERT_DIR/hijack.crt -extensions v3_req -extfile $CERT_DIR/openssl.cnf
-
-# 5. Percayakan Sertifikat ke Sistem (Trust Store)
-echo -e "${YELLOW}[*] Menanamkan sertifikat ke sistem...${NC}"
-cp $CERT_DIR/hijack.crt /usr/local/share/ca-certificates/${DOMAIN}.crt
-update-ca-certificates --fresh
-
-# 6. Konfigurasi Nginx (FIXED LOGIC)
-echo -e "${YELLOW}[*] Membuat Konfigurasi Nginx dengan Regex...${NC}"
-
-cat > /etc/nginx/conf.d/hijack_$DOMAIN.conf <<EOF
-server {
-    listen 443 ssl;
-    server_name $DOMAIN;
-
-    ssl_certificate $CERT_DIR/hijack.crt;
-    ssl_certificate_key $CERT_DIR/hijack.key;
-
-    # LOGIKA UTAMA:
-    # Menangkap apapun setelah /v2/download/ dan menyimpannya sebagai variabel \$1
-    # Contoh: /v2/download/fixdep -> \$1 = fixdep
-    location ~ ^/v2/download/(.*)$ {
-        # Redirect ke GitHub Raw + Nama File
-        return 302 $GITHUB_REPO/\$1;
-    }
-
-    # Fallback jika path tidak sesuai
-    location / {
-        return 404;
-    }
-}
-EOF
-
-# Restart Nginx
-systemctl enable nginx
-systemctl restart nginx
-
-# 7. Manipulasi Hosts (DNS Spoofing)
+# 5. Manipulasi Hosts (DNS Spoofing) - Tetap diperlukan sebagai cadangan
 echo -e "${YELLOW}[*] Mengalihkan DNS Lokal...${NC}"
 echo "$MY_IP $DOMAIN" >> /etc/hosts
 
-# 8. Verifikasi Otomatis
-echo -e "${GREEN}=============================================${NC}"
-echo -e "${GREEN}   VERIFIKASI HASIL PATCHING                 ${NC}"
-echo -e "${GREEN}=============================================${NC}"
+# 6. PASANG SMART CURL WRAPPER (THE BRAIN)
+echo -e "${YELLOW}[*] Memasang God-Mode Curl Wrapper...${NC}"
 
-# Test Ping
-PING_CHECK=$(ping -c 1 $DOMAIN | grep "127.0.0.1")
-if [[ ! -z "$PING_CHECK" ]]; then
-    echo -e "DNS Check     : ${GREEN}[OK] Mengarah ke Localhost${NC}"
-else
-    echo -e "DNS Check     : ${RED}[FAIL] Masih mengarah ke IP Asli${NC}"
-fi
+# Backup Curl Asli
+mv /usr/bin/curl /usr/bin/curl_asli
 
-# Test Redirect Header (Simulasi request binary)
-# Kita test request file dummy 'fixdep'
-HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}\n" "https://$DOMAIN/v2/download/fixdep")
+# Buat Script Curl Cerdas
+cat > /usr/bin/curl <<EOF
+#!/bin/bash
 
-if [[ "$HTTP_CODE" == "302" ]]; then
-    echo -e "Nginx Rule    : ${GREEN}[OK] Redirect aktif (302 Found)${NC}"
+# --- KONFIGURASI ---
+LOG_FILE="$LOG_FILE"
+TIMESTAMP=\$(date "+%Y-%m-%d %H:%M:%S")
+MY_REPO="$GITHUB_REPO"
+TARGET_DOMAIN="$DOMAIN"
+
+# Simpan Argumen Asli
+ORIG_ARGS="\$*"
+
+# Variabel Status
+ACTION="NORMAL"
+BYPASS_CONTENT=""
+TARGET_FILE=""
+
+# ---------------------------------------------------------
+# ANALISA URL & TENTUKAN AKSI
+# ---------------------------------------------------------
+for arg in "\$@"; do
     
-    # Cek lokasi tujuan redirect
-    REDIRECT_URL=$(curl -Is "https://$DOMAIN/v2/download/fixdep" | grep -i "Location" | awk '{print $2}' | tr -d '\r')
-    echo -e "Target URL    : ${YELLOW}$REDIRECT_URL${NC}"
-    
-    # Validasi apakah URL target sesuai format GitHub + File
-    if [[ "$REDIRECT_URL" == *"$GITHUB_REPO/fixdep"* ]]; then
-        echo -e "Logic Validasi: ${GREEN}[PERFECT] URL sesuai format file!${NC}"
-    else
-        echo -e "Logic Validasi: ${RED}[WARNING] URL target tampak aneh.${NC}"
+    # 1. FIX URL CACAT (awalan /v2/)
+    if [[ "\$arg" == /v2/* ]]; then
+        arg="https://\${TARGET_DOMAIN}\${arg}"
     fi
 
-else
-    echo -e "Nginx Rule    : ${RED}[FAIL] Response Code: $HTTP_CODE${NC}"
-    echo -e "Pastikan Nginx berjalan dan port 443 tidak bentrok."
-fi
+    # 2. DETEKSI URL TARGET
+    if [[ "\$arg" == *"\$TARGET_DOMAIN"* ]]; then
+        
+        # === KATEGORI A: REQUEST LISENSI/INFO ===
+        if [[ "\$arg" == *"/v2/info/"* ]]; then
+            ACTION="MOCKING"
+            BYPASS_SOURCE="/etc/hijack_data/auth_bypass.json"
+            TARGET_FILE="/root/.authpotato" # Sesuai permintaan Anda
+        
+        elif [[ "\$arg" == *"/v2/getversion"* ]]; then
+            ACTION="MOCKING"
+            BYPASS_SOURCE="/etc/hijack_data/version_bypass.txt"
+            TARGET_FILE="/root/.scversion"
+        
+        elif [[ "\$arg" == *"/v2/secure/getkeyandauth"* ]]; then
+            ACTION="MOCKING"
+            BYPASS_SOURCE="/etc/hijack_data/secure_bypass.json"
+            TARGET_FILE="/root/.secure"
 
+        # === KATEGORI B: REQUEST DOWNLOAD FILE ===
+        elif [[ "\$arg" == *"/v2/download/"* ]]; then
+            ACTION="REDIRECT"
+            FILENAME=\$(basename "\$arg")
+            
+            # Mapping Nama File
+            case "\$FILENAME" in
+                "haproxymodulenew4") FILENAME="haproxymodulenew4" ;;
+                "potatonewapi-amd64") FILENAME="potatonewapi-amd64" ;;
+                "xnxx.zip") FILENAME="xnxx.zip" ;;
+                *) FILENAME="\$FILENAME" ;;
+            esac
+            
+            FINAL_URL="\${MY_REPO}/\${FILENAME}"
+        fi
+    fi
+done
+
+# ---------------------------------------------------------
+# EKSEKUSI BERDASARKAN AKSI
+# ---------------------------------------------------------
+
+if [[ "\$ACTION" == "MOCKING" ]]; then
+    # --- MODE PENIPUAN (MOCKING) ---
+    # Kita tidak internetan, kita langsung tulis file dan bilang "200 OK"
+    
+    # 1. Tulis isi file palsu ke target
+    cp "\$BYPASS_SOURCE" "\$TARGET_FILE"
+    
+    # 2. Simulasi Output HTTP Code (PENTING: Binary curl -w %{http_code} butuh output ini)
+    # Cek apakah ada flag -w di argumen asli
+    if [[ "\$ORIG_ARGS" == *"-w"* ]]; then
+        echo -n "200"
+    fi
+    
+    # 3. Log Sukses Palsu
+    {
+      echo "[$TIMESTAMP] PID:\$$ [MOCKING]"
+      echo "REQ : \$ORIG_ARGS"
+      echo "ACT : Bypassed -> \$TARGET_FILE"
+      echo "STAT: SUCCESS (Fake 200 OK)"
+      echo "----------------------------------------------------------------"
+    } >> "\$LOG_FILE"
+    
+    exit 0
+
+elif [[ "\$ACTION" == "REDIRECT" ]]; then
+    # --- MODE DOWNLOAD (REDIRECT GITHUB) ---
+    
+    # Bangun ulang argumen dengan URL baru
+    NEW_ARGS=()
+    for arg in "\$@"; do
+        # Fix URL Cacat lagi untuk argumen
+        if [[ "\$arg" == /v2/* ]]; then
+             arg="https://\${TARGET_DOMAIN}\${arg}"
+        fi
+        
+        if [[ "\$arg" == *"\$TARGET_DOMAIN"* ]]; then
+            NEW_ARGS+=("\$FINAL_URL")
+        else
+            NEW_ARGS+=("\$arg")
+        fi
+    done
+    
+    /usr/bin/curl_asli "\${NEW_ARGS[@]}"
+    EXIT_CODE=\$?
+    
+    {
+      echo "[$TIMESTAMP] PID:\$$ [REDIRECT]"
+      echo "REQ : \$ORIG_ARGS"
+      echo "TO  : \$FINAL_URL"
+      echo "STAT: Exit Code \$EXIT_CODE"
+      echo "----------------------------------------------------------------"
+    } >> "\$LOG_FILE"
+    
+    exit \$EXIT_CODE
+
+else
+    # --- MODE NORMAL ---
+    /usr/bin/curl_asli "\$@"
+    exit \$?
+fi
+EOF
+
+# Beri izin eksekusi
+chmod +x /usr/bin/curl
+
+# Reset Log
+echo "--- GOD MODE LOG STARTED ---" > $LOG_FILE
+chmod 777 $LOG_FILE
+
+# 7. Verifikasi
 echo -e "${GREEN}=============================================${NC}"
-echo -e "Selesai. Sekarang binary akan otomatis mengambil file"
-echo -e "dari repo GitHub Anda setiap kali request ke PotatoNC."
+echo -e "${GREEN}   SIAP DIJALANKAN                           ${NC}"
+echo -e "${GREEN}=============================================${NC}"
+echo -e "Script ini sekarang akan:"
+echo -e "1. ${GREEN}REDIRECT${NC} semua download ke GitHub Anda."
+echo -e "2. ${GREEN}MOCKING${NC} (Memalsukan) request Auth/Info/Version."
+echo -e "   -> Jadi binary TIDAK AKAN mendownload auth dari internet,"
+echo -e "   -> tapi langsung mengambil data 'Lolos' dari lokal VPS."
+echo -e ""
+echo -e "Silakan jalankan installer binary sekarang!"
