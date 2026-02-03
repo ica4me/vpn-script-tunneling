@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # ==========================================
-# POTATONC GOD MODE HIJACKER
-# Fitur: Auto URL Fix, GitHub Redirect, & LICENSE BYPASS (MOCKING)
+# POTATONC GOD MODE HIJACKER V3
+# Fitur: Auto URL Fix, License Mocking
+# Support: Nginx 1.28.1 & Apache2 Latest (Co-existence)
 # ==========================================
 
 # KONFIGURASI
@@ -19,7 +20,7 @@ NC='\033[0m'
 
 clear
 echo -e "${GREEN}=============================================${NC}"
-echo -e "${GREEN}   GOD MODE HIJACKER (LICENSE BYPASS)        ${NC}"
+echo -e "${GREEN}   GOD MODE V3 (SPECIFIC VERSIONS)           ${NC}"
 echo -e "${GREEN}=============================================${NC}"
 
 # 1. Cek Root
@@ -32,33 +33,81 @@ fi
 echo -e "${YELLOW}[*] Membuat Data Lisensi Palsu (Bypass)...${NC}"
 mkdir -p /etc/hijack_data
 
-# A. File: .authpotato (Data Lisensi Aktif)
+# A. File: .authpotato
 cat > /etc/hijack_data/auth_bypass.json <<EOF
 {"statusCode":200,"status":"true","data":{"name_client":"Admin","chat_id":"0","address":"$(curl -s ifconfig.me)","domain":"google.com","key_client":"bypass","x_api_client":"bypass","type_script":"premium","pemilik_client":"Me","status":"active","script":"none","date_exp":"2099-12-31"}}
 EOF
 
-# B. File: .scversion (Versi Terbaru)
+# B. File: .scversion
 echo "latest" > /etc/hijack_data/version_bypass.txt
 
-# C. File: .secure (Auth Key)
+# C. File: .secure
 echo '{"status":"active","key":"bypass"}' > /etc/hijack_data/secure_bypass.json
 
-# 3. Bersihkan Konfigurasi Lama
+# 3. Bersihkan Konfigurasi Lama & Curl
 sed -i "/$DOMAIN/d" /etc/hosts
 if [ -f /usr/bin/curl_asli ]; then
     rm -f /usr/bin/curl
     mv /usr/bin/curl_asli /usr/bin/curl
 fi
 
-# 4. Install Dependencies
-apt-get update -y
-apt-get install curl zip -y
+# 4. Install Dependencies & Web Servers (CUSTOM VERSION)
+echo -e "${YELLOW}[*] Menyiapkan Repository & Install Web Server...${NC}"
 
-# 5. Manipulasi Hosts (DNS Spoofing) - Tetap diperlukan sebagai cadangan
+# Install prerequisites
+apt-get update -y
+apt-get install curl zip gnupg2 ca-certificates lsb-release ubuntu-keyring -y 2>/dev/null
+
+# --- INSTALL NGINX (Versi Spesifik via Official Repo) ---
+echo -e "${YELLOW}[*] Menambahkan Repo Nginx Official...${NC}"
+# Tambahkan Key Nginx
+curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
+    | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+
+# Tambahkan Repo (Menggunakan Mainline untuk versi terbaru)
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
+http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" \
+    | tee /etc/apt/sources.list.d/nginx.list
+
+apt-get update -y
+
+echo -e "${YELLOW}[*] Menginstall Nginx 1.28.1 & Apache2...${NC}"
+# Coba install versi spesifik, jika gagal (karena belum rilis di repo), ambil latest
+apt-get install nginx=1.28.1* -y || apt-get install nginx -y
+
+# --- INSTALL APACHE2 (Versi Terbaru) ---
+apt-get install apache2 -y
+
+# 5. CONFIG CO-EXISTENCE (Agar Nginx & Apache Jalan Bareng)
+echo -e "${YELLOW}[*] Mengatur Port Apache agar tidak bentrok...${NC}"
+# Pindahkan Apache ke port 8888 agar Nginx bisa pakai port 80
+sed -i 's/80/8888/g' /etc/apache2/ports.conf
+sed -i 's/:80/:8888/g' /etc/apache2/sites-available/*.conf
+
+# Restart keduanya
+systemctl restart apache2
+systemctl restart nginx
+
+# 6. PERBAIKAN STRUKTUR FOLDER (Sesuai Log Error Exit Code 23)
+echo -e "${YELLOW}[*] Memperbaiki Struktur Folder...${NC}"
+
+# Fix Apache Folder
+mkdir -p /etc/apache2
+mkdir -p /etc/apache2/conf-available
+mkdir -p /etc/apache2/sites-available
+touch /etc/apache2/apache2.conf
+touch /etc/apache2/envvars
+
+# Fix Nginx Folder
+mkdir -p /etc/nginx/conf.d
+touch /etc/nginx/nginx.conf
+touch /etc/nginx/conf.d/default.conf
+
+# 7. Manipulasi Hosts (DNS Spoofing)
 echo -e "${YELLOW}[*] Mengalihkan DNS Lokal...${NC}"
 echo "$MY_IP $DOMAIN" >> /etc/hosts
 
-# 6. PASANG SMART CURL WRAPPER (THE BRAIN)
+# 8. PASANG SMART CURL WRAPPER
 echo -e "${YELLOW}[*] Memasang God-Mode Curl Wrapper...${NC}"
 
 # Backup Curl Asli
@@ -87,7 +136,7 @@ TARGET_FILE=""
 # ---------------------------------------------------------
 for arg in "\$@"; do
     
-    # 1. FIX URL CACAT (awalan /v2/)
+    # 1. FIX URL CACAT
     if [[ "\$arg" == /v2/* ]]; then
         arg="https://\${TARGET_DOMAIN}\${arg}"
     fi
@@ -95,11 +144,11 @@ for arg in "\$@"; do
     # 2. DETEKSI URL TARGET
     if [[ "\$arg" == *"\$TARGET_DOMAIN"* ]]; then
         
-        # === KATEGORI A: REQUEST LISENSI/INFO ===
+        # === MOCKING (AUTH) ===
         if [[ "\$arg" == *"/v2/info/"* ]]; then
             ACTION="MOCKING"
             BYPASS_SOURCE="/etc/hijack_data/auth_bypass.json"
-            TARGET_FILE="/root/.authpotato" # Sesuai permintaan Anda
+            TARGET_FILE="/root/.authpotato"
         
         elif [[ "\$arg" == *"/v2/getversion"* ]]; then
             ACTION="MOCKING"
@@ -111,7 +160,7 @@ for arg in "\$@"; do
             BYPASS_SOURCE="/etc/hijack_data/secure_bypass.json"
             TARGET_FILE="/root/.secure"
 
-        # === KATEGORI B: REQUEST DOWNLOAD FILE ===
+        # === REDIRECT (DOWNLOAD) ===
         elif [[ "\$arg" == *"/v2/download/"* ]]; then
             ACTION="REDIRECT"
             FILENAME=\$(basename "\$arg")
@@ -130,44 +179,33 @@ for arg in "\$@"; do
 done
 
 # ---------------------------------------------------------
-# EKSEKUSI BERDASARKAN AKSI
+# EKSEKUSI
 # ---------------------------------------------------------
 
 if [[ "\$ACTION" == "MOCKING" ]]; then
-    # --- MODE PENIPUAN (MOCKING) ---
-    # Kita tidak internetan, kita langsung tulis file dan bilang "200 OK"
-    
-    # 1. Tulis isi file palsu ke target
+    # Mode Penipuan
     cp "\$BYPASS_SOURCE" "\$TARGET_FILE"
     
-    # 2. Simulasi Output HTTP Code (PENTING: Binary curl -w %{http_code} butuh output ini)
-    # Cek apakah ada flag -w di argumen asli
     if [[ "\$ORIG_ARGS" == *"-w"* ]]; then
         echo -n "200"
     fi
     
-    # 3. Log Sukses Palsu
     {
-      echo "[$TIMESTAMP] PID:\$$ [MOCKING]"
+      echo "[\$TIMESTAMP] PID:\$$ [MOCKING]"
       echo "REQ : \$ORIG_ARGS"
       echo "ACT : Bypassed -> \$TARGET_FILE"
       echo "STAT: SUCCESS (Fake 200 OK)"
       echo "----------------------------------------------------------------"
     } >> "\$LOG_FILE"
-    
     exit 0
 
 elif [[ "\$ACTION" == "REDIRECT" ]]; then
-    # --- MODE DOWNLOAD (REDIRECT GITHUB) ---
-    
-    # Bangun ulang argumen dengan URL baru
+    # Mode Download GitHub
     NEW_ARGS=()
     for arg in "\$@"; do
-        # Fix URL Cacat lagi untuk argumen
         if [[ "\$arg" == /v2/* ]]; then
              arg="https://\${TARGET_DOMAIN}\${arg}"
         fi
-        
         if [[ "\$arg" == *"\$TARGET_DOMAIN"* ]]; then
             NEW_ARGS+=("\$FINAL_URL")
         else
@@ -179,37 +217,34 @@ elif [[ "\$ACTION" == "REDIRECT" ]]; then
     EXIT_CODE=\$?
     
     {
-      echo "[$TIMESTAMP] PID:\$$ [REDIRECT]"
+      echo "[\$TIMESTAMP] PID:\$$ [REDIRECT]"
       echo "REQ : \$ORIG_ARGS"
       echo "TO  : \$FINAL_URL"
       echo "STAT: Exit Code \$EXIT_CODE"
       echo "----------------------------------------------------------------"
     } >> "\$LOG_FILE"
-    
     exit \$EXIT_CODE
 
 else
-    # --- MODE NORMAL ---
+    # Mode Normal
     /usr/bin/curl_asli "\$@"
     exit \$?
 fi
 EOF
 
-# Beri izin eksekusi
 chmod +x /usr/bin/curl
 
 # Reset Log
-echo "--- GOD MODE LOG STARTED ---" > $LOG_FILE
+echo "--- GOD MODE V3 LOG STARTED ---" > $LOG_FILE
 chmod 777 $LOG_FILE
 
-# 7. Verifikasi
+# 9. Verifikasi
 echo -e "${GREEN}=============================================${NC}"
-echo -e "${GREEN}   SIAP DIJALANKAN                           ${NC}"
+echo -e "${GREEN}   SYSTEM READY (NGINX 1.28 & APACHE)        ${NC}"
 echo -e "${GREEN}=============================================${NC}"
-echo -e "Script ini sekarang akan:"
-echo -e "1. ${GREEN}REDIRECT${NC} semua download ke GitHub Anda."
-echo -e "2. ${GREEN}MOCKING${NC} (Memalsukan) request Auth/Info/Version."
-echo -e "   -> Jadi binary TIDAK AKAN mendownload auth dari internet,"
-echo -e "   -> tapi langsung mengambil data 'Lolos' dari lokal VPS."
+echo -e "Script telah diperbaiki:"
+echo -e "1. Repo Nginx Official ditambahkan (Target v1.28.1)."
+echo -e "2. Apache dipindah ke port 8888 (Agar Nginx 80 lancar)."
+echo -e "3. Mocking & Redirect tetap aktif."
 echo -e ""
 echo -e "Silakan jalankan installer binary sekarang!"
