@@ -1,0 +1,32 @@
+{
+  "statusCode": 200,
+  "status": true,
+  "message": "SUCCESS",
+  "data": {
+    "id": 6398,
+    "name_client": "vsdowp17",
+    "bot_client": "",
+    "chat_id": 0,
+    "date_exp": "2026-03-02",
+    "address": "38.47.91.42",
+    "domain": "tcorpplhdm.keenam.my.id",
+    "key_client": "potatoIVM5zi1o2tfOEcD1eoeWwY0WXrlwlX",
+    "x_api_client": "potato0OlZFdO2lvlcZm6QVyUnYVJcFt5KII",
+    "total_renew": 0,
+    "total_change": 0,
+    "permission_change": 3,
+    "permission_install": 2,
+    "status_install": "OFF",
+    "type_script": "ALL",
+    "pemilik_client": "Nirezz",
+    "status": "month",
+    "status_bot": "no",
+    "created_at": "2026-01-31T13:38:51.000Z",
+    "updated_at": "2026-02-02T12:02:43.000Z",
+    "expired_at": "2026-01-31T13:38:51.000Z",
+    "price": "9000.00",
+    "version": "v2",
+    "step_install": "null",
+    "script": "http://scriptcjxrq91ay.potatonc.my.id:2086/f"
+  }
+}

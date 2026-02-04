@@ -1,0 +1,11 @@
+{
+  "statusCode": 200,
+  "status": true,
+  "message": "SUCCESS",
+  "data": {
+    "name_version": "SPv07.01.26",
+    "old_version": 1,
+    "new_version": 3,
+    "updated_at": "2026-01-07T15:26:36.000Z"
+  }
+}
