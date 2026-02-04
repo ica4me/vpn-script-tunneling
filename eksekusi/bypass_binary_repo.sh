@@ -1,285 +1,235 @@
 #!/bin/bash
 
 # ==========================================
-# POTATONC GOD MODE HIJACKER V6 (DEBUG EDITION)
-# Fitur: Hybrid Mocking + Deep Error Logging
+# GOD MODE HIJACKER V3 (ULTIMATE FIX)
+# Target: Debian 10/11/12 & Ubuntu 20.04/22.04/24.04
+# Feature: Nginx 1.28.x Force, Smart Curl Rewrite, Port Isolation
 # ==========================================
 
-# --- KONFIGURASI GLOBAL ---
-DOMAIN="cloud.potatonc.com"
-GITHUB_USER="ica4me"
-GITHUB_REPO="vpn-script-tunneling"
-GITHUB_BRANCH="main"
-GITHUB_BASE="https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}"
+# --- KONFIGURASI ---
+GITHUB_REPO_RAW="https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main"
+TARGET_DOMAIN="cloud.potatonc.com"
 MY_IP="127.0.0.1"
-LOG_FILE="/root/LOG_CURL_DEBUG.txt"
-
-# --- KONFIGURASI PORT ---
-APACHE_PORT=8555
-NGINX_PORT=81
+LOG_FILE="/var/log/godmode_hijack.log"
 
 # Warna
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
 NC='\033[0m'
 
-# ==========================================
-# 1. INISIALISASI
-# ==========================================
 clear
-echo -e "${GREEN}[*] MEMULAI GOD MODE V6 (DEBUG LOGGING)...${NC}"
-echo -e "${GREEN}[*] Log File akan disimpan di: $LOG_FILE${NC}"
+echo -e "${BLUE}=====================================================${NC}"
+echo -e "${YELLOW}      GOD MODE HIJACKER V3 (NGINX/1.28.1 TARGET)     ${NC}"
+echo -e "${BLUE}=====================================================${NC}"
 
+# 1. CEK ROOT
 if [ "$(id -u)" != "0" ]; then
-    echo -e "${RED}[!] Harap jalankan sebagai root!${NC}"
+    echo -e "${RED}[ERROR] Script harus dijalankan sebagai root!${NC}"
     exit 1
 fi
 
-sed -i "/$DOMAIN/d" /etc/hosts
+# 2. PERSIAPAN LINGKUNGAN (MENCEGAH ERROR DPKG/APT)
+echo -e "${GREEN}[+] Mempersiapkan Environment & Fix Log Error...${NC}"
 
-# Safety restore curl asli jika ada
-if [ -f /usr/bin/curl_asli ]; then
-    rm -f /usr/bin/curl
-    mv /usr/bin/curl_asli /usr/bin/curl
+# Hapus lock file jika ada
+rm -f /var/lib/dpkg/lock-frontend
+rm -f /var/lib/dpkg/lock
+rm -f /var/cache/apt/archives/lock
+
+# Fix struktur folder Apache yang sering error (sesuai log anda)
+mkdir -p /etc/apache2/conf-available
+mkdir -p /etc/apache2/sites-available
+mkdir -p /etc/apache2/sites-enabled
+[ ! -f /etc/apache2/envvars ] && touch /etc/apache2/envvars
+[ ! -f /etc/apache2/apache2.conf ] && touch /etc/apache2/apache2.conf
+
+# Fix struktur folder Nginx
+mkdir -p /etc/nginx/conf.d
+mkdir -p /etc/nginx/modules-enabled
+
+# 3. INSTALL NGINX VERSI TERBARU (MAINLINE REPO)
+echo -e "${GREEN}[+] Menginstall Nginx (Force Mainline Version)...${NC}"
+
+# Install dependencies
+apt-get update
+apt-get install -y gnupg2 ca-certificates lsb-release ubuntu-keyring curl
+
+# Deteksi OS untuk Repo Nginx
+OS_ID=$(lsb_release -is | tr '[:upper:]' '[:lower:]')
+OS_CODENAME=$(lsb_release -cs)
+
+# Tambahkan Key & Repo Resmi Nginx
+curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/${OS_ID} ${OS_CODENAME} nginx" | tee /etc/apt/sources.list.d/nginx.list
+
+# Install Nginx
+apt-get update
+apt-get install -y nginx
+
+# Verifikasi folder conf.d
+sed -i 's/include \/etc\/nginx\/sites-enabled\/\*;/include \/etc\/nginx\/conf.d\/*.conf;/g' /etc/nginx/nginx.conf
+
+# 4. INSTALL APACHE2 (SECONDARY)
+echo -e "${GREEN}[+] Menginstall Apache2 (Secondary Port)...${NC}"
+apt-get install -y apache2
+
+# Ubah Port Apache ke 8555 & 8666 agar tidak bentrok dengan Nginx
+sed -i 's/Listen 80/Listen 8555\nListen 8666/g' /etc/apache2/ports.conf
+# Pastikan envvars terisi jika kosong
+if [ ! -s /etc/apache2/envvars ]; then
+    echo "export APACHE_RUN_USER=www-data" >> /etc/apache2/envvars
+    echo "export APACHE_RUN_GROUP=www-data" >> /etc/apache2/envvars
+    echo "export APACHE_LOG_DIR=/var/log/apache2" >> /etc/apache2/envvars
 fi
 
-# Fix Locks & Dependencies
-rm -rf /var/lib/dpkg/lock*
-rm -rf /var/lib/apt/lists/lock
-dpkg --configure -a
-
-echo -e "${YELLOW}[*] Menyiapkan Environment...${NC}"
-apt-get update -y
-apt-get install -y gnupg2 ca-certificates lsb-release curl zip unzip nginx apache2
-
-# ==========================================
-# 2. SETTING PORT (8555 & 81)
-# ==========================================
-echo -e "${YELLOW}[*] Configuring Ports...${NC}"
-systemctl stop nginx apache2
-
-# --- APACHE (8555) ---
-mkdir -p /etc/apache2/conf-available /etc/apache2/sites-available /etc/apache2/sites-enabled
-touch /etc/apache2/apache2.conf /etc/apache2/envvars /etc/apache2/ports.conf
-
-# Reset ports.conf
-echo "Listen $APACHE_PORT" > /etc/apache2/ports.conf
-echo "<IfModule ssl_module>" >> /etc/apache2/ports.conf
-echo "    Listen 443" >> /etc/apache2/ports.conf
-echo "</IfModule>" >> /etc/apache2/ports.conf
-echo "<IfModule mod_gnutls.c>" >> /etc/apache2/ports.conf
-echo "    Listen 443" >> /etc/apache2/ports.conf
-echo "</IfModule>" >> /etc/apache2/ports.conf
-
-sed -i "s/Listen 80/Listen $APACHE_PORT/g" /etc/apache2/ports.conf 2>/dev/null
-sed -i "s/:80/:$APACHE_PORT/g" /etc/apache2/sites-available/*.conf
-sed -i "s/:8080/:$APACHE_PORT/g" /etc/apache2/sites-available/*.conf
-
-# --- NGINX (81) ---
-mkdir -p /etc/nginx/conf.d
-chmod 777 /etc/nginx/conf.d
-
-cat > /etc/nginx/nginx.conf <<EOF
-user  nginx;
-worker_processes  auto;
-error_log  /var/log/nginx/error.log notice;
-pid        /var/run/nginx.pid;
-events { worker_connections  1024; }
-http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
-    log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
-                      '\$status \$body_bytes_sent "\$http_referer" '
-                      '"\$http_user_agent" "\$http_x_forwarded_for"';
-    access_log  /var/log/nginx/access.log  main;
-    sendfile        on;
-    keepalive_timeout  65;
-    include /etc/nginx/conf.d/*.conf;
-}
-EOF
-
-cat > /etc/nginx/conf.d/default.conf <<EOF
-server {
-    listen       $NGINX_PORT;
-    server_name  localhost;
-    location / {
-        root   /usr/share/nginx/html;
-        index  index.html index.htm;
-    }
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html { root   /usr/share/nginx/html; }
-}
-EOF
-
-systemctl restart apache2
-systemctl restart nginx
-
-# ==========================================
-# 3. DATA LISENSI PALSU (Source Local)
-# ==========================================
-echo -e "${YELLOW}[*] Membuat Data Bypass Lokal...${NC}"
+# 5. PASANG FAKE DATA (MOCKING)
+echo -e "${GREEN}[+] Membuat Data Lisensi Palsu (Bypass)...${NC}"
 mkdir -p /etc/hijack_data
 
-# Auth Data
-cat > /etc/hijack_data/auth.json <<EOF
-{"statusCode":200,"status":"true","data":{"name_client":"Admin God Mode","chat_id":"123456","address":"$MY_IP","domain":"$DOMAIN","key_client":"potatopremium","x_api_client":"bypass-key","type_script":"premium","pemilik_client":"God","status":"active","script":"none","date_exp":"2099-12-31","limit_ip":"999"}}
+# Data Auth json
+cat > /etc/hijack_data/auth_bypass.json <<EOF
+{"statusCode":200,"status":"true","data":{"name_client":"GOD_MODE","chat_id":"0","address":"$(curl -s ifconfig.me)","domain":"google.com","key_client":"bypass","x_api_client":"bypass","type_script":"premium","pemilik_client":"Me","status":"active","script":"none","date_exp":"2099-12-31"}}
 EOF
 
-# Version & Key
-echo "latest" > /etc/hijack_data/version.txt
-echo '{"status":"active","key":"potatopremium"}' > /etc/hijack_data/secure.json
+# Version
+echo "latest" > /etc/hijack_data/version_bypass.txt
 
-# ==========================================
-# 4. DNS SPOOFING
-# ==========================================
-echo "$MY_IP $DOMAIN" >> /etc/hosts
+# Secure Key
+echo '{"status":"active","key":"bypass"}' > /etc/hijack_data/secure_bypass.json
 
-# ==========================================
-# 5. CURL WRAPPER (DEBUGGING MODE)
-# ==========================================
-echo -e "${YELLOW}[*] Memasang Curl Wrapper dengan LOG PENCATAT ERROR...${NC}"
+# 6. SETUP DNS SPOOFING
+sed -i "/$TARGET_DOMAIN/d" /etc/hosts
+echo "$MY_IP $TARGET_DOMAIN" >> /etc/hosts
 
-mv /usr/bin/curl /usr/bin/curl_asli
+# 7. PEMASANGAN CURL WRAPPER (SANGAT KRUSIAL)
+echo -e "${GREEN}[+] Memasang Smart Curl Wrapper (Logic Rewrite)...${NC}"
 
+# Backup Binary Asli
+if [ -f /usr/bin/curl ]; then
+    mv /usr/bin/curl /usr/bin/curl_orig
+fi
+
+# Buat Script Wrapper
 cat > /usr/bin/curl <<EOF
 #!/bin/bash
 
-# --- CONFIG ---
-LOG_FILE="$LOG_FILE"
-TARGET_DOMAIN="$DOMAIN"
-GITHUB_BASE="$GITHUB_BASE"
+# ==========================================
+# CURL HIJACKER V3 - LOGIC REWRITE
+# ==========================================
 
-# --- VARS ---
+LOG_FILE="$LOG_FILE"
+TIMESTAMP=\$(date "+%Y-%m-%d %H:%M:%S")
+ORIG_ARGS="\$@"
 ARGS=("\$@")
 NEW_ARGS=()
-MODE="NORMAL"
-LOCAL_SOURCE=""
-OUTPUT_FILE=""
-USE_HTTP_CODE=false
-TARGET_URL_LOG=""
 
-# --- PARSING ---
+# Target Repos
+REPO_AUTH="${GITHUB_REPO_RAW}/auth"
+REPO_MAIN="${GITHUB_REPO_RAW}"
+
+# Flag Trigger
+IS_DOWNLOAD=0
+
 for ((i=0; i<\${#ARGS[@]}; i++)); do
-    arg="\${ARGS[\$i]}"
-
-    # Cek Output File (-o)
-    if [[ "\$arg" == "-o" ]]; then
-        next_index=\$((i + 1))
-        OUTPUT_FILE="\${ARGS[\$next_index]}"
-        NEW_ARGS+=("\$arg")
-        continue
-    fi
+    ARG="\${ARGS[\$i]}"
     
-    # Cek flag http_code (-w)
-    if [[ "\$arg" == *"-w"* ]] || [[ "\$arg" == *"http_code"* ]]; then
-        USE_HTTP_CODE=true
-        NEW_ARGS+=("\$arg")
-        continue
-    fi
-
-    # Cek Target Domain
-    if [[ "\$arg" == *"\$TARGET_DOMAIN"* ]]; then
+    # 1. DETEKSI URL TARGET
+    if [[ "\$ARG" == *"cloud.potatonc.com"* ]]; then
         
-        # === MODE MOCKING (Auth Lokal) ===
-        if [[ "\$arg" == *"/v2/newspall/"* ]]; then
-            MODE="MOCK"
-            LOCAL_SOURCE="/etc/hijack_data/auth.json"
-        elif [[ "\$arg" == *"/v2/info/"* ]]; then
-            MODE="MOCK"
-            LOCAL_SOURCE="/etc/hijack_data/auth.json"
-        elif [[ "\$arg" == *"/v2/getversion"* ]]; then
-            MODE="MOCK"
-            LOCAL_SOURCE="/etc/hijack_data/version.txt"
-        elif [[ "\$arg" == *"/v2/secure/getkeyandauth"* ]]; then
-            MODE="MOCK"
-            LOCAL_SOURCE="/etc/hijack_data/secure.json"
-            
-        # === MODE REDIRECT (Download GitHub) ===
-        elif [[ "\$arg" == *"/v2/download/"* ]]; then
-            MODE="REDIRECT"
-            FILENAME=\$(basename "\$arg")
-            if [[ "\$FILENAME" == "nginxdefault.conf" ]]; then
-                REDIRECT_URL="\${GITHUB_BASE}/nginxdefault.conf" 
-            else
-                REDIRECT_URL="\${GITHUB_BASE}/\${FILENAME}"
-            fi
-            
-            # Ganti URL di argumen
-            NEW_ARGS+=("\$REDIRECT_URL")
-            TARGET_URL_LOG="\$REDIRECT_URL"
-            continue
-            
+        # --- MAPPING KHUSUS (SESUAI REQUEST) ---
+        
+        # A. Auth Newspall
+        if [[ "\$ARG" == *"/v2/newspall"* ]]; then
+             NEW_URL="\${REPO_AUTH}/newspall"
+             
+        # B. Auth Info
+        elif [[ "\$ARG" == *"/v2/info"* ]]; then
+             NEW_URL="\${REPO_AUTH}/info"
+             
+        # C. Get Version
+        elif [[ "\$ARG" == *"/v2/getversion"* ]]; then
+             NEW_URL="\${REPO_AUTH}/getversion"
+             
+        # D. Secure GetKey
+        elif [[ "\$ARG" == *"/v2/secure/getkeyandauth"* ]]; then
+             NEW_URL="\${REPO_AUTH}/getkeyandauth"
+             
+        # --- MAPPING DOWNLOAD CONFIG (NGINX/APACHE) ---
+        
+        elif [[ "\$ARG" == *"/v2/download/"* ]]; then
+             FILENAME=\$(basename "\$ARG")
+             
+             # Normalisasi nama file jika perlu
+             case "\$FILENAME" in
+                "nginxdefault.conf") REAL_FILE="nginxdefault.conf" ;;
+                "publicagent.conf") REAL_FILE="publicagent.conf" ;;
+                "bdsm.conf") REAL_FILE="bdsm.conf" ;;
+                "stepsister.conf") REAL_FILE="stepsister.conf" ;;
+                "nginxcdn") REAL_FILE="nginxcdn" ;; # p0t4t0.conf
+                *) REAL_FILE="\$FILENAME" ;;
+             esac
+             
+             # Arahkan ke root repo atau subfolder jika ada
+             # Asumsi file config ada di root repo vpn-script-tunneling main branch?
+             # Atau sesuaikan path ini:
+             NEW_URL="\${REPO_MAIN}/\${REAL_FILE}"
+             IS_DOWNLOAD=1
+             
         else
-            # Default URL (tidak diubah)
-            NEW_ARGS+=("\$arg")
+             # Default Fallback
+             NEW_URL="\$ARG"
         fi
         
+        # Ganti Argument URL dengan URL Baru
+        NEW_ARGS+=("\$NEW_URL")
+        
+        # Logging
+        echo "[\$TIMESTAMP] HIJACK: \$ARG -> \$NEW_URL" >> \$LOG_FILE
+        
     else
-        NEW_ARGS+=("\$arg")
+        # Argumen Biasa (Keep as is)
+        NEW_ARGS+=("\$ARG")
     fi
 done
 
-# --- EKSEKUSI ---
+# EKSEKUSI CURL ASLI DENGAN ARGUMEN BARU
+/usr/bin/curl_orig -k -L "\${NEW_ARGS[@]}"
+EXIT_CODE=\$?
 
-if [[ "\$MODE" == "MOCK" ]]; then
-    # Mocking: Copy file lokal
-    if [[ -n "\$OUTPUT_FILE" && -f "\$LOCAL_SOURCE" ]]; then
-        cp "\$LOCAL_SOURCE" "\$OUTPUT_FILE"
-        echo "[MOCK-SUCCESS] Copied \$LOCAL_SOURCE -> \$OUTPUT_FILE" >> "\$LOG_FILE"
-    fi
-    if [ "\$USE_HTTP_CODE" = true ]; then
-        echo -n "200"
-    fi
-    exit 0
-
-elif [[ "\$MODE" == "REDIRECT" ]]; then
-    # Redirect: Download dari GitHub + LOGGING ERROR
-    
-    # Buat file temp untuk menangkap error
-    STDERR_TMP=\$(mktemp)
-    
-    # Jalankan curl asli, tangkap stderr ke file temp
-    /usr/bin/curl_asli "\${NEW_ARGS[@]}" 2> "\$STDERR_TMP"
-    EXIT_CODE=\$?
-    
-    # Baca error
-    ERROR_MSG=\$(cat "\$STDERR_TMP")
-    rm "\$STDERR_TMP"
-    
-    # LOGGING
-    if [ \$EXIT_CODE -ne 0 ]; then
-        echo "================== [DOWNLOAD ERROR] ==================" >> "\$LOG_FILE"
-        echo "Time      : \$(date)" >> "\$LOG_FILE"
-        echo "Target    : \$TARGET_URL_LOG" >> "\$LOG_FILE"
-        echo "Exit Code : \$EXIT_CODE" >> "\$LOG_FILE"
-        echo "Error Log : \$ERROR_MSG" >> "\$LOG_FILE"
-        echo "======================================================" >> "\$LOG_FILE"
-    else
-        echo "[DOWNLOAD-OK] \$TARGET_URL_LOG" >> "\$LOG_FILE"
-    fi
-    
-    exit \$EXIT_CODE
-
-else
-    # Normal request
-    /usr/bin/curl_asli "\$@"
-    exit \$?
-fi
+exit \$EXIT_CODE
 EOF
 
 chmod +x /usr/bin/curl
-# Buat file log baru/kosong
-echo "--- NEW SESSION LOG START ---" > $LOG_FILE
-chmod 777 $LOG_FILE
 
-# ==========================================
-# 6. SELESAI
-# ==========================================
-echo -e "${GREEN}=============================================${NC}"
-echo -e "${GREEN}   GOD MODE V6 INSTALLED (DEBUG MODE)        ${NC}"
-echo -e "${GREEN}=============================================${NC}"
-echo -e "Sekarang, jalankan script installer VPN Anda."
-echo -e "Jika terjadi error 'Download Failed', segera cek log dengan perintah:"
-echo -e "${YELLOW}cat $LOG_FILE${NC}"
-echo -e ""
+# 8. FINISHING & RESTART SERVICE
+echo -e "${GREEN}[+] Restarting Services...${NC}"
+
+# Enable Services
+systemctl enable nginx
+systemctl enable apache2
+
+# Restart Nginx
+systemctl restart nginx
+if systemctl is-active --quiet nginx; then
+    echo -e "${GREEN} -> Nginx OK (Version: $(nginx -v 2>&1))${NC}"
+else
+    echo -e "${RED} -> Nginx Failed to Start! Cek config.${NC}"
+fi
+
+# Restart Apache
+systemctl restart apache2
+if systemctl is-active --quiet apache2; then
+    echo -e "${GREEN} -> Apache2 OK (Listening on 8555/8666)${NC}"
+else
+    echo -e "${RED} -> Apache2 Failed to Start!${NC}"
+fi
+
+# Cek Port
+echo -e "${YELLOW}[*] Listening Ports:${NC}"
+ss -tulpn | grep -E 'nginx|apache'
+
+echo -e "${GREEN}=====================================================${NC}"
+echo -e "${GREEN}      INSTALLASI SELESAI - SIAP DI-BULLY SCRIPT LAIN ${NC}"
+echo -e "${GREEN}=====================================================${NC}"
