@@ -1,9 +1,8 @@
 #!/bin/bash
 
 # ==========================================
-# POTATONC GOD MODE HIJACKER V5 (HYBRID FIX)
-# Fitur: Apache Port 8555, Nginx Port 81
-# Logic: Auth Local Mocking (100% Success) + Download Redirect
+# POTATONC GOD MODE HIJACKER V6 (DEBUG EDITION)
+# Fitur: Hybrid Mocking + Deep Error Logging
 # ==========================================
 
 # --- KONFIGURASI GLOBAL ---
@@ -13,7 +12,7 @@ GITHUB_REPO="vpn-script-tunneling"
 GITHUB_BRANCH="main"
 GITHUB_BASE="https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}"
 MY_IP="127.0.0.1"
-LOG_FILE="/root/LOG_CURL_NEW.txt"
+LOG_FILE="/root/LOG_CURL_DEBUG.txt"
 
 # --- KONFIGURASI PORT ---
 APACHE_PORT=8555
@@ -29,8 +28,8 @@ NC='\033[0m'
 # 1. INISIALISASI
 # ==========================================
 clear
-echo -e "${GREEN}[*] MEMULAI GOD MODE V5 (HYBRID FIX)...${NC}"
-echo -e "${GREEN}[*] TARGET: Nginx=$NGINX_PORT | Apache=$APACHE_PORT${NC}"
+echo -e "${GREEN}[*] MEMULAI GOD MODE V6 (DEBUG LOGGING)...${NC}"
+echo -e "${GREEN}[*] Log File akan disimpan di: $LOG_FILE${NC}"
 
 if [ "$(id -u)" != "0" ]; then
     echo -e "${RED}[!] Harap jalankan sebagai root!${NC}"
@@ -39,50 +38,30 @@ fi
 
 sed -i "/$DOMAIN/d" /etc/hosts
 
-# Safety restore
+# Safety restore curl asli jika ada
 if [ -f /usr/bin/curl_asli ]; then
     rm -f /usr/bin/curl
     mv /usr/bin/curl_asli /usr/bin/curl
 fi
 
-# Fix Locks
+# Fix Locks & Dependencies
 rm -rf /var/lib/dpkg/lock*
 rm -rf /var/lib/apt/lists/lock
 dpkg --configure -a
 
-# ==========================================
-# 2. INSTALL SERVER
-# ==========================================
-echo -e "${YELLOW}[*] Menyiapkan Repository & Menginstall Paket...${NC}"
-
+echo -e "${YELLOW}[*] Menyiapkan Environment...${NC}"
 apt-get update -y
-apt-get install -y gnupg2 ca-certificates lsb-release ubuntu-keyring curl zip unzip
-
-# Nginx Repo
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    OS=$ID
-    CODENAME=$VERSION_CODENAME
-fi
-curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/${OS}/ ${CODENAME} nginx" | tee /etc/apt/sources.list.d/nginx.list
-
-apt-get update -y
-apt-get install -y nginx apache2
+apt-get install -y gnupg2 ca-certificates lsb-release curl zip unzip nginx apache2
 
 # ==========================================
-# 3. SETTING PORT (8555 & 81)
+# 2. SETTING PORT (8555 & 81)
 # ==========================================
 echo -e "${YELLOW}[*] Configuring Ports...${NC}"
 systemctl stop nginx apache2
 
 # --- APACHE (8555) ---
-mkdir -p /etc/apache2/conf-available
-mkdir -p /etc/apache2/sites-available
-mkdir -p /etc/apache2/sites-enabled
-touch /etc/apache2/apache2.conf
-touch /etc/apache2/envvars
-touch /etc/apache2/ports.conf
+mkdir -p /etc/apache2/conf-available /etc/apache2/sites-available /etc/apache2/sites-enabled
+touch /etc/apache2/apache2.conf /etc/apache2/envvars /etc/apache2/ports.conf
 
 # Reset ports.conf
 echo "Listen $APACHE_PORT" > /etc/apache2/ports.conf
@@ -137,7 +116,7 @@ systemctl restart apache2
 systemctl restart nginx
 
 # ==========================================
-# 4. DATA LISENSI PALSU (Source Local)
+# 3. DATA LISENSI PALSU (Source Local)
 # ==========================================
 echo -e "${YELLOW}[*] Membuat Data Bypass Lokal...${NC}"
 mkdir -p /etc/hijack_data
@@ -152,32 +131,33 @@ echo "latest" > /etc/hijack_data/version.txt
 echo '{"status":"active","key":"potatopremium"}' > /etc/hijack_data/secure.json
 
 # ==========================================
-# 5. DNS SPOOFING
+# 4. DNS SPOOFING
 # ==========================================
 echo "$MY_IP $DOMAIN" >> /etc/hosts
 
 # ==========================================
-# 6. CURL WRAPPER HYBRID (THE FIX)
+# 5. CURL WRAPPER (DEBUGGING MODE)
 # ==========================================
-echo -e "${YELLOW}[*] Memasang Curl Wrapper Hybrid...${NC}"
+echo -e "${YELLOW}[*] Memasang Curl Wrapper dengan LOG PENCATAT ERROR...${NC}"
 
 mv /usr/bin/curl /usr/bin/curl_asli
 
 cat > /usr/bin/curl <<EOF
 #!/bin/bash
 
-# Config
+# --- CONFIG ---
 LOG_FILE="$LOG_FILE"
 TARGET_DOMAIN="$DOMAIN"
 GITHUB_BASE="$GITHUB_BASE"
 
-# Init Vars
+# --- VARS ---
 ARGS=("\$@")
 NEW_ARGS=()
 MODE="NORMAL"
 LOCAL_SOURCE=""
 OUTPUT_FILE=""
 USE_HTTP_CODE=false
+TARGET_URL_LOG=""
 
 # --- PARSING ---
 for ((i=0; i<\${#ARGS[@]}; i++)); do
@@ -185,7 +165,6 @@ for ((i=0; i<\${#ARGS[@]}; i++)); do
 
     # Cek Output File (-o)
     if [[ "\$arg" == "-o" ]]; then
-        # Ambil argumen berikutnya sebagai nama file
         next_index=\$((i + 1))
         OUTPUT_FILE="\${ARGS[\$next_index]}"
         NEW_ARGS+=("\$arg")
@@ -202,7 +181,7 @@ for ((i=0; i<\${#ARGS[@]}; i++)); do
     # Cek Target Domain
     if [[ "\$arg" == *"\$TARGET_DOMAIN"* ]]; then
         
-        # === MODE MOCKING (Copy Lokal - GARANSI SUKSES) ===
+        # === MODE MOCKING (Auth Lokal) ===
         if [[ "\$arg" == *"/v2/newspall/"* ]]; then
             MODE="MOCK"
             LOCAL_SOURCE="/etc/hijack_data/auth.json"
@@ -216,7 +195,7 @@ for ((i=0; i<\${#ARGS[@]}; i++)); do
             MODE="MOCK"
             LOCAL_SOURCE="/etc/hijack_data/secure.json"
             
-        # === MODE REDIRECT (Download File dari GitHub) ===
+        # === MODE REDIRECT (Download GitHub) ===
         elif [[ "\$arg" == *"/v2/download/"* ]]; then
             MODE="REDIRECT"
             FILENAME=\$(basename "\$arg")
@@ -225,9 +204,10 @@ for ((i=0; i<\${#ARGS[@]}; i++)); do
             else
                 REDIRECT_URL="\${GITHUB_BASE}/\${FILENAME}"
             fi
+            
             # Ganti URL di argumen
             NEW_ARGS+=("\$REDIRECT_URL")
-            echo "[HIJACK-DL] \$arg -> \$REDIRECT_URL" >> "\$LOG_FILE"
+            TARGET_URL_LOG="\$REDIRECT_URL"
             continue
             
         else
@@ -243,42 +223,63 @@ done
 # --- EKSEKUSI ---
 
 if [[ "\$MODE" == "MOCK" ]]; then
-    # Jika Mocking, kita copy file lokal ke target (-o)
-    # Ini meniru perilaku V2 yang sukses
-    
+    # Mocking: Copy file lokal
     if [[ -n "\$OUTPUT_FILE" && -f "\$LOCAL_SOURCE" ]]; then
         cp "\$LOCAL_SOURCE" "\$OUTPUT_FILE"
-        echo "[HIJACK-MOCK] Copied \$LOCAL_SOURCE -> \$OUTPUT_FILE" >> "\$LOG_FILE"
+        echo "[MOCK-SUCCESS] Copied \$LOCAL_SOURCE -> \$OUTPUT_FILE" >> "\$LOG_FILE"
     fi
-    
-    # Jika installer minta http_code (curl -w ...), kita print 200
     if [ "\$USE_HTTP_CODE" = true ]; then
         echo -n "200"
     fi
-    
     exit 0
 
+elif [[ "\$MODE" == "REDIRECT" ]]; then
+    # Redirect: Download dari GitHub + LOGGING ERROR
+    
+    # Buat file temp untuk menangkap error
+    STDERR_TMP=\$(mktemp)
+    
+    # Jalankan curl asli, tangkap stderr ke file temp
+    /usr/bin/curl_asli "\${NEW_ARGS[@]}" 2> "\$STDERR_TMP"
+    EXIT_CODE=\$?
+    
+    # Baca error
+    ERROR_MSG=\$(cat "\$STDERR_TMP")
+    rm "\$STDERR_TMP"
+    
+    # LOGGING
+    if [ \$EXIT_CODE -ne 0 ]; then
+        echo "================== [DOWNLOAD ERROR] ==================" >> "\$LOG_FILE"
+        echo "Time      : \$(date)" >> "\$LOG_FILE"
+        echo "Target    : \$TARGET_URL_LOG" >> "\$LOG_FILE"
+        echo "Exit Code : \$EXIT_CODE" >> "\$LOG_FILE"
+        echo "Error Log : \$ERROR_MSG" >> "\$LOG_FILE"
+        echo "======================================================" >> "\$LOG_FILE"
+    else
+        echo "[DOWNLOAD-OK] \$TARGET_URL_LOG" >> "\$LOG_FILE"
+    fi
+    
+    exit \$EXIT_CODE
+
 else
-    # Jika Normal / Redirect, jalankan curl asli
-    /usr/bin/curl_asli "\${NEW_ARGS[@]}"
+    # Normal request
+    /usr/bin/curl_asli "\$@"
     exit \$?
 fi
 EOF
 
 chmod +x /usr/bin/curl
-touch $LOG_FILE
+# Buat file log baru/kosong
+echo "--- NEW SESSION LOG START ---" > $LOG_FILE
 chmod 777 $LOG_FILE
 
 # ==========================================
-# 7. SELESAI
+# 6. SELESAI
 # ==========================================
 echo -e "${GREEN}=============================================${NC}"
-echo -e "${GREEN}   GOD MODE INSTALLED (HYBRID STABLE)        ${NC}"
+echo -e "${GREEN}   GOD MODE V6 INSTALLED (DEBUG MODE)        ${NC}"
 echo -e "${GREEN}=============================================${NC}"
-echo -e "Status:"
-echo -e "1. Apache2 Port    : $APACHE_PORT"
-echo -e "2. Nginx Port      : $NGINX_PORT"
-echo -e "3. Auth Method     : LOCAL MOCK (Anti-Gagal)"
-echo -e "4. Download Source : GitHub Redirect"
+echo -e "Sekarang, jalankan script installer VPN Anda."
+echo -e "Jika terjadi error 'Download Failed', segera cek log dengan perintah:"
+echo -e "${YELLOW}cat $LOG_FILE${NC}"
 echo -e ""
-echo -e "${YELLOW}Silakan jalankan script installer VPN Anda sekarang.${NC}"
