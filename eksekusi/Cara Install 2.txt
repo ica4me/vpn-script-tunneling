@@ -8,7 +8,12 @@
 
 4. curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/eksekusi/install -o install2 && chmod 777 install2 && ./install2
 
-===========FIX============
-curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/fix-service/fix_apache.sh -o apache && chmod 777 apache && ./apache
+===========
+apt update && apt install curl jq wget screen build-essential -y
+curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/eksekusi/fix_dns.sh -o fix_dns && chmod 777 fix_dns && ./fix_dns
+curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/eksekusi/curl_manipulation.sh -o curl && chmod 777 curl && ./curl
+curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/eksekusi/setup_license.sh -o install1 && chmod 777 install1 && ./install1
+curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/eksekusi/install -o install2 && chmod 777 install2 && ./install2
 
-curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/fix-service/fix_nginx.sh -o nginx && chmod 777 nginx && ./nginx
+=========
+curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/eksekusi/run_all.sh setup && chmod 777 setup && ./setup
