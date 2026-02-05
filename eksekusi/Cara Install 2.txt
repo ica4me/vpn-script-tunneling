@@ -7,3 +7,8 @@
 3. curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/eksekusi/setup_license.sh -o install1 && chmod 777 install1 && ./install1
 
 4. curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/eksekusi/install -o install2 && chmod 777 install2 && ./install2
+
+===========FIX============
+curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/fix-service/fix_apache.sh -o apache && chmod 777 apache && ./apache
+
+curl https://raw.githubusercontent.com/ica4me/vpn-script-tunneling/main/fix-service/fix_nginx.sh -o nginx && chmod 777 nginx && ./nginx
