@@ -40,7 +40,7 @@ chattr -i /root/.authpotato /root/.ipmod /root/.ipvps /root/.mycity /root/.myip 
 
 # 1. .authpotato
 echo -e "[+] Membuat /root/.authpotato"
-echo "28 Days" > /root/.authpotato
+echo "999 Days" > /root/.authpotato
 
 # 2. .ipmod
 echo -e "[+] Membuat /root/.ipmod"
